@@ -118,6 +118,7 @@ struct dvb_entry {
 	unsigned freq_bpf;
 	unsigned diseqc_wait;
 	char *lnb;
+    unsigned cnr;
 };
 
 /**

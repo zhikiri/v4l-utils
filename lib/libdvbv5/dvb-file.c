@@ -943,6 +943,12 @@ int dvb_write_file(const char *fname, struct dvb_file *dvb_file)
 					dvb_cmd_name(entry->props[i].cmd),
 					*attr_name);
 		}
+
+        if (entry->cnr >= 0) {
+            fprintf(fp, "\tC/N = %d\n",
+				entry->cnr);
+        }
+
 		fprintf(fp, "\n");
 	}
 	fclose(fp);

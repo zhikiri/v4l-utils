@@ -69,6 +69,9 @@ struct arguments {
 
 	/* Used by status print */
 	unsigned n_status_lines;
+
+    /* Used for save status information into the output */
+    unsigned entry_signal_strength;
 };
 
 static const struct argp_option options[] = {
@@ -125,6 +128,7 @@ static int print_frontend_stats(struct arguments *args,
 		fprintf(stderr, "\r\x1b[%dA\x1b[J", args->n_status_lines);
 
 	args->n_status_lines = 0;
+    args->entry_signal_strength = 0;
 
 	if (isatty(STDERR_FILENO)) {
 		rc = dvb_fe_retrieve_stats(parms, DTV_STATUS, &status);
@@ -142,6 +146,7 @@ static int print_frontend_stats(struct arguments *args,
 
 	for (i = 0; i < MAX_DTV_STATS; i++) {
 		show = 1;
+        struct dtv_stats *cnr;
 
 		dvb_fe_snprintf_stat(parms, DTV_QUALITY, _("Quality"),
 				     i, &p, &len, &show);
@@ -151,6 +156,10 @@ static int print_frontend_stats(struct arguments *args,
 
 		dvb_fe_snprintf_stat(parms, DTV_STAT_CNR, _("C/N"),
 				     i, &p, &len, &show);
+
+        cnr = dvb_fe_retrieve_stats_layer(parms, DTV_STAT_CNR, i);
+        if (cnr)
+            args->entry_signal_strength = cnr->uvalue;
 
 		dvb_fe_snprintf_stat(parms, DTV_STAT_ERROR_BLOCK_COUNT, _("UCB"),
 				     i,  &p, &len, &show);
@@ -189,6 +198,7 @@ static int check_frontend(void *__args,
 	int rc, i;
 	fe_status_t status;
 
+    args->entry_signal_strength = 0;
 	args->n_status_lines = 0;
 	for (i = 0; i < args->timeout_multiply * 40; i++) {
 		if (parms->abort)
@@ -299,6 +309,7 @@ static int run_scan(struct arguments *args, struct dvb_device *dvb)
 						&check_frontend, args,
 						args->other_nit,
 						args->timeout_multiply);
+        entry->cnr = args->entry_signal_strength;
 
 		if (parms->abort) {
 			dvb_scan_free_handler_table(dvb_scan_handler);
