@@ -71,7 +71,7 @@ struct arguments {
 	unsigned n_status_lines;
 
     /* Used for save status information into the output */
-    unsigned entry_signal_strength;
+    char entry_signal_strength[16];
 };
 
 static const struct argp_option options[] = {
@@ -128,7 +128,9 @@ static int print_frontend_stats(struct arguments *args,
 		fprintf(stderr, "\r\x1b[%dA\x1b[J", args->n_status_lines);
 
 	args->n_status_lines = 0;
-    args->entry_signal_strength = 0;
+
+    // Cleaning the entry signal strength
+    memset(&args->entry_signal_strength[0], 0, sizeof(args->entry_signal_strength));
 
 	if (isatty(STDERR_FILENO)) {
 		rc = dvb_fe_retrieve_stats(parms, DTV_STATUS, &status);
@@ -158,8 +160,14 @@ static int print_frontend_stats(struct arguments *args,
 				     i, &p, &len, &show);
 
         cnr = dvb_fe_retrieve_stats_layer(parms, DTV_STAT_CNR, i);
-        if (cnr)
-            args->entry_signal_strength = cnr->uvalue;
+        if (cnr) {
+            if (cnr->scale != FE_SCALE_DECIBEL) {
+                sprintf(args->entry_signal_strength, "%.2fdB", cnr->svalue / 1000.);
+            } else {
+                // Cannot determine the signal strength information
+                sprintf(args->entry_signal_strength, "N/A");
+            }
+        }
 
 		dvb_fe_snprintf_stat(parms, DTV_STAT_ERROR_BLOCK_COUNT, _("UCB"),
 				     i,  &p, &len, &show);
@@ -198,7 +206,9 @@ static int check_frontend(void *__args,
 	int rc, i;
 	fe_status_t status;
 
-    args->entry_signal_strength = 0;
+    // Cleaning the entry signal strength
+    memset(&args->entry_signal_strength[0], 0, sizeof(args->entry_signal_strength));
+
 	args->n_status_lines = 0;
 	for (i = 0; i < args->timeout_multiply * 40; i++) {
 		if (parms->abort)
@@ -309,7 +319,7 @@ static int run_scan(struct arguments *args, struct dvb_device *dvb)
 						&check_frontend, args,
 						args->other_nit,
 						args->timeout_multiply);
-        entry->cnr = args->entry_signal_strength;
+        memcpy(entry->cnr, args->entry_signal_strength, sizeof(entry->cnr));
 
 		if (parms->abort) {
 			dvb_scan_free_handler_table(dvb_scan_handler);

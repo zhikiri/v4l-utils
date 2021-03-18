@@ -945,7 +945,7 @@ int dvb_write_file(const char *fname, struct dvb_file *dvb_file)
 		}
 
         if (entry->cnr >= 0) {
-            fprintf(fp, "\tC/N = %d\n",
+            fprintf(fp, "\tC/N = %s\n",
 				entry->cnr);
         }
 
