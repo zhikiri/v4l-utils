@@ -944,7 +944,8 @@ int dvb_write_file(const char *fname, struct dvb_file *dvb_file)
 					*attr_name);
 		}
 
-        if (entry->cnr >= 0) {
+        printf("DEB : CNR before Save #%s", entry->cnr);
+        if (sizeof(entry->cnr) / sizeof(entry->cnr[0]) > 0) {
             fprintf(fp, "\tC/N = %s\n",
 				entry->cnr);
         }
@@ -1166,6 +1167,8 @@ static int get_program_and_store(struct dvb_v5_fe_parms_priv *parms,
 	entry->sat_number = parms->p.sat_number;
 	entry->freq_bpf = parms->p.freq_bpf;
 	entry->diseqc_wait = parms->p.diseqc_wait;
+
+    memcpy(entry->cnr, parms->p.cnr, sizeof(parms->p.cnr));
 	if (parms->p.lnb)
 		entry->lnb = strdup(parms->p.lnb->alias);
 

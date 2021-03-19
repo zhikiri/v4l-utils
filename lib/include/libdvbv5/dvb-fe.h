@@ -145,6 +145,8 @@ struct dvb_v5_fe_parms {
 	/* Charsets to be used by the conversion utilities */
 	char				*default_charset;
 	char				*output_charset;
+
+    char cnr[16];
 };
 
 #ifdef __cplusplus

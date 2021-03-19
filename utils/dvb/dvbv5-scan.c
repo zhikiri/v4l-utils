@@ -161,7 +161,7 @@ static int print_frontend_stats(struct arguments *args,
 
         cnr = dvb_fe_retrieve_stats_layer(parms, DTV_STAT_CNR, i);
         if (cnr) {
-            if (cnr->scale != FE_SCALE_DECIBEL) {
+            if (cnr->scale == FE_SCALE_DECIBEL) {
                 sprintf(args->entry_signal_strength, "%.2fdB", cnr->svalue / 1000.);
             } else {
                 // Cannot determine the signal strength information
@@ -319,7 +319,7 @@ static int run_scan(struct arguments *args, struct dvb_device *dvb)
 						&check_frontend, args,
 						args->other_nit,
 						args->timeout_multiply);
-        memcpy(entry->cnr, args->entry_signal_strength, sizeof(entry->cnr));
+        memcpy(parms->cnr, args->entry_signal_strength, sizeof(parms->cnr));
 
 		if (parms->abort) {
 			dvb_scan_free_handler_table(dvb_scan_handler);
