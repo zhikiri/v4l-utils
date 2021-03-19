@@ -944,7 +944,6 @@ int dvb_write_file(const char *fname, struct dvb_file *dvb_file)
 					*attr_name);
 		}
 
-        printf("DEB : CNR before Save #%s", entry->cnr);
         if (sizeof(entry->cnr) / sizeof(entry->cnr[0]) > 0) {
             fprintf(fp, "\tC/N = %s\n",
 				entry->cnr);
