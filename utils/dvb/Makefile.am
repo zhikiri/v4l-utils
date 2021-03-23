@@ -1,4 +1,4 @@
-bin_PROGRAMS = dvb-fe-tool dvbv5-zap dvbv5-scan dvb-format-convert
+bin_PROGRAMS = dvb-fe-tool dvbv5-zap dvbv5-scan dvb-format-convert dvbv5-devices
 
 if WITH_DVBV5_REMOTE
 bin_PROGRAMS += \
@@ -31,5 +31,10 @@ dvbv5_daemon_SOURCES = dvbv5-daemon.c
 dvbv5_daemon_LDADD = ../../lib/libdvbv5/libdvbv5.la @LIBINTL@ $(LIBUDEV_LIBS) $(XMLRPC_LDADD) $(PTHREAD_LDADD)
 dvbv5_daemon_LDFLAGS = $(ARGP_LIBS) -lm $(XMLRPC_LDFLAGS) $(PTHREAD_LDFLAGS)
 dvbv5_daemon_CFLAGS =  $(XMLRPC_CFLAGS) $(LIBUDEV_CFLAGS) $(PTHREAD_CFLAGS)
+
+dvbv5_devices_SOURCES = dvbv5-devices.c
+dvbv5_devices_LDADD = ../../lib/libdvbv5/libdvbv5.la @LIBINTL@ $(LIBUDEV_LIBS) $(XMLRPC_LDADD) $(PTHREAD_LDADD)
+dvbv5_devices_LDFLAGS = $(ARGP_LIBS) -lm $(XMLRPC_LDFLAGS) $(PTHREAD_LDFLAGS)
+dvbv5_devices_CFLAGS =  $(XMLRPC_CFLAGS) $(LIBUDEV_CFLAGS) $(PTHREAD_CFLAGS)
 
 EXTRA_DIST = README
