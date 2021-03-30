@@ -2,21 +2,36 @@
 #include <config.h>
 #include <libdvbv5/dvb-dev.h>
 
-int main() {
-    struct dvb_device *dvb;
-    struct dvb_open_descriptor *dev_desc;
-    struct dvb_dev_list device;
+int check_device(struct dvb_dev_list *device) {
+    int flags = O_RDONLY & ~O_NONBLOCK;
 
-    dvb = dvb_dev_alloc();
-    dvb_dev_find(dvb, NULL, NULL);
-
-    if (dvb->num_devices == 0) {
-        // Return a JSON with error `{"error": "There are not connected devices", "devices": {}}`
-        printf("{\"error\":\"There are no connected devices\",\"devices\":{}}");
+    int fd = open(device->path, flags, 0);
+    if (fd == -1) {
+        // Device open is failed
         return 1;
     }
 
-    printf("{\"error\":\"There are no connected devices\",\"devices\":{");
+    return 0;
+}
+
+int main() {
+    struct dvb_device *dvb;
+    struct dvb_dev_list device;
+
+    dvb = dvb_dev_alloc();
+    if (!dvb) {
+        printf("{\"error\":\"Cannot allocate memory for DVB\",\"devices\":{}}\n");
+        return -1;
+    }
+
+    dvb_dev_find(dvb, NULL, NULL);
+    if (dvb->num_devices == 0) {
+        printf("{\"error\":\"There are no connected devices\",\"devices\":{}}\n");
+        dvb_dev_free(dvb);
+        return -2;
+    }
+
+    printf("{\"error\":\"\",\"devices\":{");
 
     for (int i = 0; i < dvb->num_devices; i++) {
         device = dvb->devices[i];
@@ -26,27 +41,23 @@ int main() {
         }
 
         // Prints `"/dev/dvb/adapterX/frontend0": `
-        printf("{\"%s\":", device.path);
+        printf("\"%s\":", device.path);
 
         // Trying to connect to the device frontend
-        dev_desc = dvb_dev_open(dvb, device.sysname, O_RDONLY);
-        if (!dev_desc) {
+        int res = check_device(&device);
+        if (res) {
             // Device cannot be open, mark it as FALSE
+            printf("false");
+        } else {
             printf("true");
-            continue;
         }
 
-        printf("false");
-
-        if (i != (dvb->num_devices - 1)) {
+        if (i != (dvb->num_devices - 2)) {
             printf(",");
         }
-
-        // Close device connection
-        dvb_dev_close(dev_desc);
     }
 
-    printf("}}");
+    printf("}}\n");
 
     // Clean memory
     dvb_dev_free(dvb);
