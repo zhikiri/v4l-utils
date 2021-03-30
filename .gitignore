@@ -61,3 +61,5 @@ v4l-utils-po/en@quot.header
 v4l-utils-po/insert-header.sin
 v4l-utils-po/quot.sed
 v4l-utils-po/remove-potcdate.sin
+
+.vscode
