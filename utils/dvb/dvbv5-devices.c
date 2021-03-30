@@ -36,7 +36,7 @@ int check_device(struct dvb_device *dvb, struct dvb_dev_list *device) {
         return 1;
     }
 
-    if (xioctl(fd, FE_GET_INFO, dvb->fe_parms->info) == -1) {
+    if (xioctl(fd, FE_GET_INFO, &dvb->fe_parms->info) == -1) {
 		// Cannot retrieve the device information
         ret = 2;
 	}
