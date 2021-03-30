@@ -12,11 +12,11 @@ int main() {
 
     if (dvb->num_devices == 0) {
         // Return a JSON with error `{"error": "There are not connected devices", "devices": {}}`
-        printf("{\"error\": \"There are no connected devices\", \"devices\": {}}");
+        printf("{\"error\":\"There are no connected devices\",\"devices\":{}}");
         return 1;
     }
 
-    printf("{\"error\": \"There are no connected devices\", \"devices\": {");
+    printf("{\"error\":\"There are no connected devices\",\"devices\":{");
 
     for (int i = 0; i < dvb->num_devices; i++) {
         device = dvb->devices[i];
@@ -26,7 +26,7 @@ int main() {
         }
 
         // Prints `"/dev/dvb/adapterX/frontend0": `
-        printf("{\"%s\": ", device.path);
+        printf("{\"%s\":", device.path);
 
         // Trying to connect to the device frontend
         dev_desc = dvb_dev_open(dvb, device.sysname, O_RDONLY);
@@ -45,6 +45,8 @@ int main() {
         // Close device connection
         dvb_dev_close(dev_desc);
     }
+
+    printf("}}");
 
     // Clean memory
     dvb_dev_free(dvb);
