@@ -1,8 +1,33 @@
 #include <stdio.h>
 #include <config.h>
+#include <time.h>
 #include <libdvbv5/dvb-dev.h>
 
-int check_device(struct dvb_dev_list *device) {
+#define MAX_TIME		10	/* 1.0 seconds */
+
+#define xioctl(fh, request, arg...) ({					\
+	int __rc;							\
+	struct timespec __start, __end;					\
+									\
+	clock_gettime(CLOCK_MONOTONIC, &__start);			\
+	do {								\
+		__rc = ioctl(fh, request, ##arg);			\
+		if (__rc != -1)						\
+			break;						\
+		if ((errno != EINTR) && (errno != EAGAIN))		\
+			break;						\
+		clock_gettime(CLOCK_MONOTONIC, &__end);			\
+		if (__end.tv_sec * 10 + __end.tv_nsec / 100000000 >	\
+		    __start.tv_sec * 10 + __start.tv_nsec / 100000000 +	\
+		    MAX_TIME)						\
+			break;						\
+	} while (1);							\
+									\
+	__rc;								\
+})
+
+int check_device(struct dvb_device *dvb, struct dvb_dev_list *device) {
+    int ret;
     int flags = O_RDONLY & ~O_NONBLOCK;
 
     int fd = open(device->path, flags, 0);
@@ -11,7 +36,14 @@ int check_device(struct dvb_dev_list *device) {
         return 1;
     }
 
-    return 0;
+    if (xioctl(fd, FE_GET_INFO, dvb->fe_parms->info) == -1) {
+		// Cannot retrieve the device information
+        ret = 2;
+	}
+
+    // Close opened adapter
+    close(fd);
+    return ret;
 }
 
 int main() {
@@ -44,7 +76,7 @@ int main() {
         printf("\"%s\":", device.path);
 
         // Trying to connect to the device frontend
-        int res = check_device(&device);
+        int res = check_device(dvb, &device);
         if (res) {
             // Device cannot be open, mark it as FALSE
             printf("false");
