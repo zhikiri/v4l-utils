@@ -27,7 +27,7 @@
 })
 
 int check_device(struct dvb_device *dvb, struct dvb_dev_list *device) {
-    int ret;
+    int ret = 0;
     int flags = O_RDONLY & ~O_NONBLOCK;
 
     int fd = open(device->path, flags, 0);
